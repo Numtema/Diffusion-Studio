@@ -1,0 +1,8 @@
+{
+  "name": "Diffusion Studio",
+  "description": "An immersive AI software workshop. Describe an idea, watch it take shape across multiple variations, focus on details, and refine your vision in a high-fidelity creative stage.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
