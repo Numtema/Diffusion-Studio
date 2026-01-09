@@ -7,6 +7,9 @@ export interface Artifact {
   type: 'ui' | 'logic' | 'architecture';
   content: string;
   status: ArtifactStatus;
+  reasoning?: string;
+  variations?: string[]; // Stocke les versions précédentes
+  currentVariationIndex?: number;
 }
 
 export interface Session {
