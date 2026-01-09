@@ -11,115 +11,108 @@ interface ArtifactCardProps {
   isFocused?: boolean;
 }
 
+const getAgentMetadata = (title: string) => {
+  if (title.includes('UX')) return { role: 'UX Expert', icon: <Icons.Layers className="w-6 h-6" />, color: 'bg-indigo-600' };
+  if (title.includes('Persona')) return { role: 'Persona Specialist', icon: <Icons.Maximize className="w-6 h-6" />, color: 'bg-purple-600' };
+  if (title.includes('UI')) return { role: 'UI Expert', icon: <Icons.Code className="w-6 h-6" />, color: 'bg-blue-600' };
+  return { role: 'Module Strategy', icon: <Icons.Sparkles className="w-6 h-6" />, color: 'bg-slate-800' };
+};
+
 export const ArtifactCard: React.FC<ArtifactCardProps> = ({ artifact, onFocus, onRemove, onSwitchVariation, isFocused }) => {
   const isStreaming = artifact.status === 'streaming';
+  const metadata = getAgentMetadata(artifact.title);
   
   return (
     <div 
-      className={`group relative bg-white border ${isFocused ? 'border-[#1a73e8] ring-2 ring-blue-50' : 'border-gray-200'} rounded-[24px] overflow-hidden transition-all duration-300 hover:shadow-xl cursor-pointer flex flex-col h-full shadow-sm`}
+      className={`group relative bg-white border ${isFocused ? 'border-blue-600 ring-[6px] ring-blue-50' : 'border-slate-100 shadow-sm'} rounded-[2.5rem] overflow-hidden transition-all duration-500 hover:shadow-2xl cursor-pointer flex flex-col h-full`}
       onClick={onFocus}
     >
-      {/* M3 Header */}
-      <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-20">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-3">
-            <div className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${isStreaming ? 'bg-[#1a73e8] animate-pulse shadow-[0_0_8px_rgba(26,115,232,0.4)]' : 'bg-gray-300'}`} />
-            <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">{artifact.title}</span>
-          </div>
-          {artifact.variations && artifact.variations.length > 1 && (
-            <div className="flex gap-1 mt-1" onClick={(e) => e.stopPropagation()}>
-              {artifact.variations.map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => onSwitchVariation?.(idx)}
-                  className={`w-4 h-1 rounded-full transition-all ${idx === (artifact.currentVariationIndex ?? 0) ? 'bg-blue-600 w-6' : 'bg-gray-200 hover:bg-gray-300'}`}
-                />
-              ))}
-            </div>
-          )}
+      {/* Top Banner Area */}
+      <div className="px-10 pt-10 pb-6 flex items-start justify-between">
+        <div className="flex gap-6 items-center">
+           <div className={`w-14 h-14 ${metadata.color} rounded-2xl flex items-center justify-center text-white shadow-xl shadow-${metadata.color.split('-')[1]}-100 transform group-hover:scale-110 transition-transform`}>
+              {metadata.icon}
+           </div>
+           <div>
+              <h3 className="text-xl font-black text-slate-900 tracking-tight leading-none mb-2">{artifact.title}</h3>
+              <div className="flex items-center gap-3">
+                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{metadata.role}</span>
+                 <div className="px-2 py-0.5 bg-slate-50 rounded border border-slate-100 text-[8px] font-black text-slate-400 uppercase">Projection Active</div>
+              </div>
+           </div>
         </div>
-        
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
-          {onRemove && (
-            <button 
-              onClick={(e) => { e.stopPropagation(); onRemove(); }}
-              className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
-            >
-              <Icons.Trash className="w-4 h-4" />
-            </button>
-          )}
-          <button className="p-2 text-gray-400 hover:text-[#1a73e8] hover:bg-blue-50 rounded-xl transition-colors">
-            <Icons.Maximize className="w-4 h-4" />
+        <div className="flex gap-2">
+          <button className="p-2 bg-slate-50 rounded-xl text-slate-300 hover:text-blue-600 transition-colors">
+            <Icons.Maximize className="w-5 h-5" />
           </button>
         </div>
       </div>
 
-      {/* Surface Area */}
-      <div className="flex-1 overflow-auto relative bg-gray-50/30 custom-scrollbar flex flex-col">
-        {isStreaming && artifact.reasoning && (
-          <div className="p-6 bg-blue-50/30 border-b border-blue-50">
-            <div className="flex items-center gap-2 mb-2 text-[#1a73e8]">
-              <Icons.Sparkles className="w-4 h-4 animate-spin-slow" />
-              <span className="text-[10px] font-bold uppercase tracking-wider">Agent Thinking</span>
-            </div>
-            <p className="text-xs text-gray-600 italic leading-relaxed">{artifact.reasoning}</p>
-          </div>
-        )}
-
-        <div className="flex-1 relative">
-          {artifact.type === 'ui' ? (
-            <div className="w-full h-full bg-white">
-              <iframe
-                srcDoc={artifact.content || `
-                  <body style="margin:0;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-family:sans-serif;height:100vh;background:#ffffff;">
-                    <div style="text-align:center;">
-                      <p style="font-weight:500;margin:0;">${isStreaming ? 'Synthesizing Visuals...' : 'Ready'}</p>
-                    </div>
-                  </body>
-                `}
-                title={artifact.id}
-                className="w-full h-full border-none pointer-events-none"
-              />
-            </div>
-          ) : (
-            <div className="p-6 md:p-8 font-mono text-sm text-gray-700 leading-relaxed whitespace-pre-wrap selection:bg-blue-100">
-              {artifact.content || (
-                <div className="space-y-4 opacity-30 animate-pulse">
-                  <div className="h-3 bg-gray-200 rounded w-3/4"></div>
-                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+      {/* Main Preview Surface */}
+      <div className="flex-1 relative mx-8 mb-8 bg-slate-50/50 rounded-[2rem] border border-slate-100/50 p-6 flex flex-col shadow-inner overflow-hidden">
+        {isStreaming ? (
+           <div className="flex-1 flex flex-col items-center justify-center text-center p-12 space-y-6">
+              <div className="relative">
+                <div className="w-16 h-16 border-[6px] border-blue-100 border-t-blue-600 rounded-full animate-spin"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                   <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
                 </div>
-              )}
-            </div>
-          )}
-        </div>
-        
-        {isStreaming && (
-          <div className="absolute top-0 left-0 w-full h-1 bg-gray-100 overflow-hidden">
-            <div className="h-full bg-[#1a73e8] animate-loading w-1/2" />
+              </div>
+              <div className="space-y-2">
+                <p className="text-[10px] font-black text-blue-600 uppercase tracking-[0.3em]">Synthesizing Data</p>
+                <p className="text-xs font-bold text-slate-400 italic">"{artifact.reasoning || 'Calibrating neural projection...'}"</p>
+              </div>
+           </div>
+        ) : (
+          <div className="flex-1 overflow-auto custom-scrollbar">
+            {artifact.type === 'ui' ? (
+              <div className="w-full h-full min-h-[350px] bg-white rounded-2xl overflow-hidden shadow-2xl border border-slate-100">
+                <iframe
+                  srcDoc={artifact.content || ''}
+                  title={artifact.id}
+                  className="w-full h-full border-none pointer-events-none"
+                />
+              </div>
+            ) : (
+              <div className="h-full flex items-center justify-center font-serif italic text-2xl text-slate-700 leading-relaxed text-center px-6 py-10 selection:bg-blue-100">
+                "{artifact.content.substring(0, 300)}{artifact.content.length > 300 ? '...' : ''}"
+              </div>
+            )}
           </div>
         )}
+        
+        {/* Glow effect on hover */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/0 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+      </div>
+
+      {/* Bottom Artifact Controls */}
+      <div className="px-10 pb-10 flex items-center justify-between mt-auto">
+        <div className="flex gap-2">
+           {artifact.variations?.map((_, idx) => (
+             <button
+               key={idx}
+               onClick={(e) => { e.stopPropagation(); onSwitchVariation?.(idx); }}
+               className={`text-[10px] font-black w-8 h-8 rounded-xl transition-all flex items-center justify-center border ${idx === (artifact.currentVariationIndex ?? 0) ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-100' : 'bg-white text-slate-400 border-slate-200 hover:border-blue-400 hover:text-blue-500'}`}
+             >
+               A{idx + 1}
+             </button>
+           ))}
+        </div>
+
+        <div className="flex items-center gap-3 text-blue-600 font-black text-[11px] uppercase tracking-[0.25em] group-hover:translate-x-2 transition-all">
+           Inspect Projection
+           <div className="w-8 h-8 bg-blue-50 rounded-full flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all">
+             <Icons.Send className="w-4 h-4 rotate-45" />
+           </div>
+        </div>
       </div>
 
       <style>{`
-        @keyframes loading {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(200%); }
-        }
-        .animate-loading {
-          animation: loading 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-        }
-        .animate-spin-slow {
-          animation: spin 3s linear infinite;
-        }
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
         .custom-scrollbar::-webkit-scrollbar {
           width: 5px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #e5e7eb;
+          background: #e2e8f0;
           border-radius: 10px;
         }
       `}</style>
